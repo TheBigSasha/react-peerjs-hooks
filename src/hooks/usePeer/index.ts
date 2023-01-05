@@ -174,6 +174,7 @@ export function useHostMultiPeerSession<T>( initialState: T): [PeerDataPair<T>[]
   const [error, setError] = useState<string>();
   const [peer, setPeer] = useState<any>();
   const conns = peer?.connections.length;
+  // @ts-ignore
   const [_numConnections, setNumConnections] = useState(conns); // used to force a re-render when the number of connections changes, actual value is not used as peer object has a connections property
 
 
