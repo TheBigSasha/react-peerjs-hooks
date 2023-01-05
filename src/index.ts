@@ -1,1 +1,1 @@
-export { useCounter } from './hooks/useCounter/';
+export { useHostPeerSession, useJoinPeerSession } from './hooks/usePeer';
