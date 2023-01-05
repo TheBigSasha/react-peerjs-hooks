@@ -161,7 +161,7 @@ export function useHostPeerSession<T>(
 
 // Hook usage:
 
-// const [peerStates, myState, setMyState, myID, numConnections, error] = useHostMultiPeerSession<StateInterface>()
+// const [peerStates, myState, setMyState, myID, numConnections, error] = useHostMultiPeerSession<StateInterface>(initialState)
 interface PeerDataPair<T> {
   id: string;
   data: T;
@@ -253,3 +253,73 @@ export function useHostMultiPeerSession<T>( initialState: T): [PeerDataPair<T>[]
   
   return [peerStates, myState, setMyState, myID, conns, error];
 }
+
+// const [peerStates, myState, setMyState, numConnections, error] = useJoinMultiPeerSession<StateInterface>(peerID, initialState)
+
+export function useJoinMultiPeerSession<T>(peerID: string, initialState: T): [PeerDataPair<T>[], T, (state: T) => void, number, string?] {
+  const [peerStates, setPeerStates] = useState<PeerDataPair<T>[]>([]);
+  const [myState, setMyState] = useState<T>(initialState);
+  const [error, setError] = useState<string>();
+  const [peer, setPeer] = useState<any>();
+  const conns = peer?.connections.length;
+  // @ts-ignore
+  const [_numConnections, setNumConnections] = useState(conns); // used to force a re-render when the number of connections changes, actual value is not used as peer object has a connections property
+
+  useEffect(() => {
+    import('peerjs').then(({ default: Peer }) => {
+      const peer = new Peer();
+      setPeer(peer);
+      peer.on('open', () => {
+        const conn = peer.connect(peerID);
+        conn.on('open', () => {
+// @ts-ignore
+          conn.on('data', (data: T) => {
+            setPeerStates((prev) => {
+              const newState = [...prev];
+              const index = newState.findIndex((p) => p.id === conn.peer);
+              if (index === -1) {
+                newState.push({ id: conn.peer, data });
+              } else {
+                newState[index] = { id: conn.peer, data };
+              }
+              return newState;
+            });
+          });
+
+          setNumConnections((prev: number) => prev + 1);
+        });
+      });
+      peer.on('error', (err) => {
+        console.error(err);
+        setError(err.message);
+      });
+
+      peer.on('close', () => {
+        setNumConnections(0);
+      });
+
+      peer.on('disconnected', () => {
+        setNumConnections(0);
+      });
+    });
+  }, [peerID]);
+
+  const connections = Object.values(peer?.connections || {});
+
+  useEffect(() => {
+    if (myState && connections) {
+      connections.forEach((conn: any) => {
+        if (conn && conn[0]) {
+          conn[0].send(myState);
+        } else {
+          setNumConnections((prev: number) => prev - 1);
+        }
+      });
+    }
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  , [myState, connections, connections.length]);
+
+  return [peerStates, myState, setMyState, conns, error];
+}
+
