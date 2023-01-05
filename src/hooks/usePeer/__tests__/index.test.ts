@@ -23,4 +23,4 @@ describe('usePeer', () => {
     });
     expect(result.current[1]).toEqual({ foo: 'bar' });
   });
-})
+});
