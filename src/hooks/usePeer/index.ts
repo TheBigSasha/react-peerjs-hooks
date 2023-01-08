@@ -159,8 +159,11 @@ export function useHostPeerSession<T>(
   return [partnerState, myState, setMyState, isConnected, myID];
 }
 
-function checkType<T> (object: any): Boolean{
-  return Object.keys(object).every((key) => typeof object[key] === typeof (object as T)[key]);
+// True if the object has all the properties of the type T
+function checkType<T extends object> (object: any): Boolean{
+  return Object.keys(object).every((key) => {
+    return key in (object as T);
+  }); 
 }
 
 // Hook usage:
@@ -244,7 +247,7 @@ export function useHostMultiPeerSession<HostState, PeerState>(initialState: Host
     if (peerIsAvailable) {
       peer.on('connection', (conn: any) => {
         conn.on('data', (data: unknown) => {
-          if(!checkType<PeerState>(data)){
+          if(!checkType<Internal<PeerState>>(data)){
             setError(`Received data of incorrect type`);
             return;
           }else{
