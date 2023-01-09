@@ -31,8 +31,7 @@
   },
   "peerDependencies": {
     "react": ">= 16.8.0",
-    "react-dom": ">= 16.8.0",
-    "peerjs": "1.4.7"
+    "react-dom": ">= 16.8.0"
   },
   "devDependencies": {
     "@testing-library/react-hooks": "^3.4.1",
@@ -51,8 +50,7 @@
     "rollup-plugin-typescript2": "^0.25.3",
     "rollup-plugin-uglify": "^6.0.4",
     "ts-jest": "^26.1.3",
-    "typescript": "^3.8.3",
-    "peerjs": "1.4.7"
+    "typescript": "^3.8.3"
   },
   "files": [
     "dist"
@@ -70,6 +68,7 @@
     "webrtc"
   ],
   "dependencies": {
-    "prop-types": "^15.7.2"
+    "prop-types": "^15.7.2",
+    "peerjs": "1.4.7"
   }
 }
