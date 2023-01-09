@@ -21,9 +21,7 @@ export function useJoinPeerSession<T>(
       peer.on('open', () => {
         const conn = peer.connect(peerID);
         conn.on('open', () => {
-          {
-            /*@ts-ignore*/
-          }
+          {/*@ts-ignore*/}
           conn.on('data', (data: T) => {
             setPartnerState(data);
           });
@@ -35,9 +33,7 @@ export function useJoinPeerSession<T>(
 
   useEffect(() => {
     if (peer) {
-      {
-        /*@ts-ignore*/
-      }
+      {/*@ts-ignore*/}
       peer.on('connection', (conn) => {
         conn.on('data', (data: T) => {
           setPartnerState(data);
@@ -53,9 +49,7 @@ export function useJoinPeerSession<T>(
         setPartnerState(data);
       });
 
-      {
-        /*@ts-ignore*/
-      }
+      {/*@ts-ignore*/}
       peer.on('error', (err) => {
         console.error(err);
       });
