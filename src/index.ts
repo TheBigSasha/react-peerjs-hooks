@@ -1,6 +1,4 @@
 export {
-  useHostPeerSession,
-  useJoinPeerSession,
   useHostMultiPeerSession,
   useJoinMultiPeerSession,
   PeerDataPair,
