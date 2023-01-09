@@ -119,7 +119,7 @@ export function useHostMultiPeerSession<HostState, PeerState>(
         });
         conn.on('disconnected', (id: string) => {
           setPeerStates((prev: PeerDataPairWithConn<PeerState>[]) => {
-            return prev.filter((state) => state.conn !== conn.peer && state.id !== myID);
+            return prev.filter((state) => state.conn !== id && state.id !== myID && state.id !== id);
           });
         });
 
