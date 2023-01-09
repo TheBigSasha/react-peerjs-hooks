@@ -17,11 +17,12 @@ Call the useHostPeerSession hook with the type of the state you want to share. T
 
 ```tsx
  const [
-    peerStates, myState, setMyState, myID, numConnections, forceNewID, error ] = useHostMultiPeerSession<Host, Voter>({
-    name: "Host",
-    question: "What is your favorite color?",
-    options: ["Red", "Blue", "Green"],
-  });
+    peerStates, myState, setMyState, myID, numConnections, forceNewID, error ] =
+     useHostMultiPeerSession<Host, Voter>({
+      name: "Host",
+      question: "What is your favorite color?",
+      options: ["Red", "Blue", "Green"],
+    });
 
 ```
 
