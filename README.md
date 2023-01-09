@@ -49,13 +49,13 @@ Given someone else's ID, call the useJoinPeerSession hook with the type of the s
 In the above code, the following are used for the types "Host" and "Voter"
 ```tsx
 interface Host {
- name: string
- question: string
- options: string[]
+ name: string;
+ question: string;
+ options: string[];
 }
 
 interface Joiner {
- name: string
- choice: string
+ name: string;
+ choice: string;
 }
 ```
