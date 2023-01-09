@@ -22,7 +22,8 @@ export function useJoinPeerSession<T>(
         const conn = peer.connect(peerID);
         conn.on('open', () => {
           {
-            /*@ts-ignore*/}
+            /*@ts-ignore*/
+          }
           conn.on('data', (data: T) => {
             setPartnerState(data);
           });
@@ -35,7 +36,8 @@ export function useJoinPeerSession<T>(
   useEffect(() => {
     if (peer) {
       {
-        /*@ts-ignore*/}
+        /*@ts-ignore*/
+      }
       peer.on('connection', (conn) => {
         conn.on('data', (data: T) => {
           setPartnerState(data);
@@ -52,7 +54,8 @@ export function useJoinPeerSession<T>(
       });
 
       {
-        /*@ts-ignore*/}
+        /*@ts-ignore*/
+      }
       peer.on('error', (err) => {
         console.error(err);
       });
@@ -116,7 +119,8 @@ export function useHostPeerSession<T>(
             setMyID(id);
             peer.on('connection', (conn) => {
               {
-                /*@ts-ignore*/ }
+                /*@ts-ignore*/
+              }
               conn.on('data', (data: T) => {
                 setPartnerState(data);
               });
@@ -160,10 +164,10 @@ export function useHostPeerSession<T>(
 }
 
 // True if the object has all the properties of the type T
-function checkType<T extends object> (object: any): Boolean{
+function checkType<T extends object>(object: any): Boolean {
   return Object.keys(object).every((key) => {
     return key in (object as T);
-  }); 
+  });
 }
 
 // Hook usage:
@@ -173,53 +177,63 @@ export interface PeerDataPair<T> {
   data: T;
 }
 
-type PeerDataPairWithConn<T> = PeerDataPair<T> & {conn: any};
+type PeerDataPairWithConn<T> = PeerDataPair<T> & { conn: any };
 
-type Internal<T> = T & {__peerHookInternalID: string};
-
+type Internal<T> = T & { __peerHookInternalID: string };
 
 // const [peerStates, myState, setMyState, myID, numConnections, getNewID, error] = useHostMultiPeerSession<HostStateType, PeerStateType>(initialState)
-export function useHostMultiPeerSession<HostState, PeerState>(initialState: HostState): [PeerDataPair<PeerState>[], HostState, (state: HostState) => void, string, number,  () => void, string?] {
+export function useHostMultiPeerSession<HostState, PeerState>(
+  initialState: HostState,
+): [
+  PeerDataPair<PeerState>[],
+  HostState,
+  (state: HostState) => void,
+  string,
+  number,
+  () => void,
+  string?,
+] {
   let pastID = '';
-  if(typeof window !== 'undefined'){
+  if (typeof window !== 'undefined') {
     const prevIDTime = window.localStorage.getItem('TBS_REACT_HOOK_PEERID_TIME');
-    if(prevIDTime && Date.now() - parseInt(prevIDTime) < 1000 * 60 * 60 * 24 * 7){
-    pastID = window.localStorage.getItem('TBS_REACT_HOOK_PEERID') || '';
-    }
-    else {
-      window.localStorage.setItem('TBS_REACT_HOOK_PEERID_TIME', Date.now().toString());
+    if (prevIDTime && Date.now() - parseInt(prevIDTime) < 1000 * 60 * 60 * 24 * 7) {
+      pastID = window.localStorage.getItem('TBS_REACT_HOOK_PEERID') || '';
+    } else {
+      window.localStorage.setItem(
+        'TBS_REACT_HOOK_PEERID_TIME',
+        Date.now().toString(),
+      );
     }
   }
 
-
-
-  const [peerStates, setPeerStates] = useState<PeerDataPairWithConn<PeerState>[]>([]);
-  const [myState, setMyState] = useState<Internal<HostState>>({...initialState, __peerHookInternalID: pastID});
+  const [peerStates, setPeerStates] = useState<PeerDataPairWithConn<PeerState>[]>(
+    [],
+  );
+  const [myState, setMyState] = useState<Internal<HostState>>({
+    ...initialState,
+    __peerHookInternalID: pastID,
+  });
   const [error, setError] = useState<string | undefined>();
   const [peer, setPeer] = useState<any>();
 
   const myID = myState.__peerHookInternalID;
   const setMyID = (id: string) => {
-    setMyState({...myState, __hostID: id});
-  }
+    setMyState({ ...myState, __hostID: id });
+  };
 
   const setStateExternal = (state: HostState) => {
-    setMyState({...state, __peerHookInternalID: myID});
-  }
-  
-  const stateExternal = {...myState, __peerHookInternalID: undefined};
+    setMyState({ ...state, __peerHookInternalID: myID });
+  };
 
-
+  const stateExternal = { ...myState, __peerHookInternalID: undefined };
 
   const getNewID = () => {
     const newID = generateID();
-    if(typeof window !== 'undefined'){
+    if (typeof window !== 'undefined') {
       window.localStorage.setItem('TBS_REACT_HOOK_PEERID', newID);
     }
     setMyID(newID);
   };
-
-
 
   const conns = peer?.connections.length || 0;
   useEffect(() => {
@@ -233,11 +247,10 @@ export function useHostMultiPeerSession<HostState, PeerState>(initialState: Host
       });
       peer.on('open', (id) => {
         setMyID(id);
-        if(typeof window !== 'undefined'){
+        if (typeof window !== 'undefined') {
           window.localStorage.setItem('TBS_REACT_HOOK_PEERID', id);
         }
-      }
-      );
+      });
     });
   }, [myID]);
 
@@ -247,17 +260,20 @@ export function useHostMultiPeerSession<HostState, PeerState>(initialState: Host
     if (peerIsAvailable) {
       peer.on('connection', (conn: any) => {
         conn.on('data', (data: unknown) => {
-          if(!checkType<Internal<PeerState>>(data)){
+          if (!checkType<Internal<PeerState>>(data)) {
             setError(`Received data of incorrect type`);
             return;
-          }else{
-            const peerState = data as  Internal<PeerState>;
+          } else {
+            const peerState = data as Internal<PeerState>;
             setPeerStates((prev: PeerDataPairWithConn<PeerState>[]) => {
               const newState = prev.filter((state) => state.id !== conn.peer);
-              newState.push({ id: peerState.__peerHookInternalID, data: peerState, conn: conn.peer });
+              newState.push({
+                id: peerState.__peerHookInternalID,
+                data: peerState,
+                conn: conn.peer,
+              });
               return newState;
-            }
-            );
+            });
           }
         });
         conn.on('close', () => {
@@ -265,77 +281,105 @@ export function useHostMultiPeerSession<HostState, PeerState>(initialState: Host
             return prev.filter((state) => state.conn !== conn.peer);
           });
         });
-        conn.on('error', (err: { message: SetStateAction<string | undefined>; }) => {
+        conn.on('error', (err: { message: SetStateAction<string | undefined> }) => {
           setError(err.message);
         });
         conn.on('disconnected', (id: string) => {
           setPeerStates((prev: PeerDataPairWithConn<PeerState>[]) => {
             return prev.filter((state) => state.conn !== id);
           });
-        }
-        );
+        });
 
         conn.on('open', () => {
           conn.send(myState);
-        }
-        );
-
+        });
       });
       peer.on('open', (id: string) => {
         setMyID(id);
-      }
-      );
+      });
     }
   }, [peerIsAvailable, peer]);
 
-
   const connections = Object.values(peer?.connections || {});
 
-  const connectionsDeepForEffect: string = connections.map((conn: any) => conn[0]?.peer).join('-');
+  const connectionsDeepForEffect: string = connections
+    .map((conn: any) => conn[0]?.peer)
+    .join('-');
 
   // publish state to all connections
-  useEffect(() => {
-    if (myState && connections) {
-      connections.forEach((conn: any) => {
-        if (conn && conn[0]) {
-          conn[0].send(myState);
-        } else {
-          setError(`Connection lost to peer ${conn.peer} when trying to send state`);
-        }
-      });
-    }
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  , [myState, connections, connectionsDeepForEffect]);
-  
-  return [peerStates.map(peerstate => {return {...peerstate, conn: undefined, data : {...peerstate.data, __peerHookInternalID: undefined}}}), stateExternal, setStateExternal, myID, conns, getNewID, error];
+  useEffect(
+    () => {
+      if (myState && connections) {
+        connections.forEach((conn: any) => {
+          if (conn && conn[0]) {
+            conn[0].send(myState);
+          } else {
+            setError(
+              `Connection lost to peer ${conn.peer} when trying to send state`,
+            );
+          }
+        });
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [myState, connections, connectionsDeepForEffect],
+  );
+
+  return [
+    peerStates.map((peerstate) => {
+      return {
+        ...peerstate,
+        conn: undefined,
+        data: { ...peerstate.data, __peerHookInternalID: undefined },
+      };
+    }),
+    stateExternal,
+    setStateExternal,
+    myID,
+    conns,
+    getNewID,
+    error,
+  ];
 }
 
 // const [peerStates, myState, setMyState, numConnections, error] = useJoinMultiPeerSession<StateInterface>(peerID, initialState)
 
-export function useJoinMultiPeerSession<HostState, PeerState>(peerID: string, initialState: PeerState): [PeerDataPair<PeerState>[], HostState | undefined, PeerState, (state: PeerState) => void, number, string?] {
+export function useJoinMultiPeerSession<HostState, PeerState>(
+  peerID: string,
+  initialState: PeerState,
+): [
+  PeerDataPair<PeerState>[],
+  HostState | undefined,
+  PeerState,
+  (state: PeerState) => void,
+  number,
+  string?,
+] {
   let pastID = '';
-  if(typeof window !== 'undefined'){
+  if (typeof window !== 'undefined') {
     pastID = window.localStorage.getItem('TBS_REACT_HOOK_PEERID_JOIN') || '';
-    if(pastID === ''){
+    if (pastID === '') {
       pastID = generateID();
       window.localStorage.setItem('TBS_REACT_HOOK_PEERID_JOIN', pastID);
     }
   }
 
-  const [peerStates, setPeerStates] = useState<PeerDataPairWithConn<Internal<PeerState>>[]>([]);
-  const [myState, setMyState] = useState<Internal<PeerState>>({...initialState, __peerHookInternalID: pastID});
+  const [peerStates, setPeerStates] = useState<
+    PeerDataPairWithConn<Internal<PeerState>>[]
+  >([]);
+  const [myState, setMyState] = useState<Internal<PeerState>>({
+    ...initialState,
+    __peerHookInternalID: pastID,
+  });
   const [hostState, setHostState] = useState<HostState>();
   const [error, setError] = useState<string | undefined>();
   const [peer, setPeer] = useState<any>();
 
   const setStateExternal = (state: PeerState) => {
-    setMyState({...state, __peerHookInternalID: pastID});
-  }
-  
-  const stateExternal = {...myState, __peerHookInternalID: undefined};
+    setMyState({ ...state, __peerHookInternalID: pastID });
+  };
 
-
+  const stateExternal = { ...myState, __peerHookInternalID: undefined };
 
   const conns = peer?.connections.length || 0;
   useEffect(() => {
@@ -351,17 +395,23 @@ export function useJoinMultiPeerSession<HostState, PeerState>(peerID: string, in
           conn.send(myState);
         });
         conn.on('data', (data: unknown) => {
-          if(checkType<Internal<HostState>>(data) && (data as Internal<HostState>).__peerHookInternalID === peerID){
+          if (
+            checkType<Internal<HostState>>(data) &&
+            (data as Internal<HostState>).__peerHookInternalID === peerID
+          ) {
             const hostState = data as Internal<HostState>;
-            setHostState({...hostState, __peerHookInternalID: undefined});
-          } else if(checkType<Internal<PeerState>>(data)){
+            setHostState({ ...hostState, __peerHookInternalID: undefined });
+          } else if (checkType<Internal<PeerState>>(data)) {
             const peerState = data as Internal<PeerState>;
             setPeerStates((prev: PeerDataPairWithConn<Internal<PeerState>>[]) => {
               const newState = prev.filter((state) => state.id !== conn.peer);
-              newState.push({ id: peerState.__peerHookInternalID, data: peerState, conn: conn.peer });
+              newState.push({
+                id: peerState.__peerHookInternalID,
+                data: peerState,
+                conn: conn.peer,
+              });
               return newState;
-            }
-            );
+            });
           } else {
             setError(`Received data of incorrect type`);
           }
@@ -371,7 +421,7 @@ export function useJoinMultiPeerSession<HostState, PeerState>(peerID: string, in
             return prev.filter((state) => state.conn !== conn.peer);
           });
         });
-        conn.on('error', (err: { message: SetStateAction<string | undefined>; }) => {
+        conn.on('error', (err: { message: SetStateAction<string | undefined> }) => {
           setError(err.message);
         });
       });
@@ -381,24 +431,40 @@ export function useJoinMultiPeerSession<HostState, PeerState>(peerID: string, in
   const connections = Object.values(peer?.connections || {});
 
   // publish state to all connections
-  useEffect(() => {
-    if (myState && connections) {
-      connections.forEach((conn: any) => {
-        if (conn && conn[0]) {
-          conn[0].send(myState);
-        } else {
-          setError(`Connection lost to peer ${conn.peer} - previous Peer ID ${peerStates.filter(
-            (state) => state.id === conn.peer
-          )[0]?.data.__peerHookInternalID}
+  useEffect(
+    () => {
+      if (myState && connections) {
+        connections.forEach((conn: any) => {
+          if (conn && conn[0]) {
+            conn[0].send(myState);
+          } else {
+            setError(`Connection lost to peer ${conn.peer} - previous Peer ID ${
+              peerStates.filter((state) => state.id === conn.peer)[0]?.data
+                .__peerHookInternalID
+            }
           )} when trying to send state`);
-        }
-      });
-    }
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  , [myState, connections, connections.length]);
+          }
+        });
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [myState, connections, connections.length],
+  );
 
-  return [peerStates.map(state => {return {...state, conn: undefined, data : {...state.data, __peerHookInternalID: undefined} }}), hostState, stateExternal, setStateExternal, conns, error];
+  return [
+    peerStates.map((state) => {
+      return {
+        ...state,
+        conn: undefined,
+        data: { ...state.data, __peerHookInternalID: undefined },
+      };
+    }),
+    hostState,
+    stateExternal,
+    setStateExternal,
+    conns,
+    error,
+  ];
 }
 
 /*
