@@ -1,6 +1,6 @@
 {
   "name": "@thebigsasha/react-peerjs-hooks",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Simple implementation of hooks for using PeerJS in a React App, compatible ssr and pre-compilers like NextJS and Gatsby  ",
   "author": "thebigsasha",
   "license": "Apache-2.0",
