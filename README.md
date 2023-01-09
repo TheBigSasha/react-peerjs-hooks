@@ -46,7 +46,7 @@ Given someone else's ID, call the useJoinPeerSession hook with the type of the s
 ```
 
 ### Extra Details
-In the above code, the following are used for the types "Host" and "Voter"
+In the above code, the following are used for the types `Host` and `Joiner`
 ```tsx
 interface Host {
  name: string;
