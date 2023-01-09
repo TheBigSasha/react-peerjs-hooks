@@ -99,7 +99,7 @@ export function useHostMultiPeerSession<HostState, PeerState>(
           } else {
             const peerState = data as Internal<PeerState>;
             setPeerStates((prev: PeerDataPairWithConn<PeerState>[]) => {
-              const newState = prev.filter((state) => state.id !== conn.peer);
+              const newState = prev.filter((state) => state.conn !== conn.peer && state.id !== myID);
               newState.push({
                 id: peerState.__peerHookInternalID,
                 data: peerState,
@@ -111,7 +111,7 @@ export function useHostMultiPeerSession<HostState, PeerState>(
         });
         conn.on('close', () => {
           setPeerStates((prev: PeerDataPairWithConn<PeerState>[]) => {
-            return prev.filter((state) => state.conn !== conn.peer);
+            return prev.filter((state) => state.conn !== conn.peer && state.id !== myID);
           });
         });
         conn.on('error', (err: { message: SetStateAction<string | undefined> }) => {
@@ -119,7 +119,7 @@ export function useHostMultiPeerSession<HostState, PeerState>(
         });
         conn.on('disconnected', (id: string) => {
           setPeerStates((prev: PeerDataPairWithConn<PeerState>[]) => {
-            return prev.filter((state) => state.conn !== id);
+            return prev.filter((state) => state.conn !== conn.peer && state.id !== myID);
           });
         });
 
@@ -251,7 +251,7 @@ export function useJoinMultiPeerSession<HostState, PeerState>(
           } else if (checkType<Internal<PeerState>>(data)) {
             const peerState = data as Internal<PeerState>;
             setPeerStates((prev: PeerDataPairWithConn<Internal<PeerState>>[]) => {
-              const newState = prev.filter((state) => state.id !== conn.peer);
+              const newState = prev.filter((state) => state.conn !== conn.peer && state.id !== myState.__peerHookInternalID);
               newState.push({
                 id: peerState.__peerHookInternalID,
                 data: peerState,
@@ -266,7 +266,7 @@ export function useJoinMultiPeerSession<HostState, PeerState>(
         });
         conn.on('close', () => {
           setPeerStates((prev: PeerDataPairWithConn<Internal<PeerState>>[]) => {
-            return prev.filter((state) => state.conn !== conn.peer);
+            return prev.filter((state) => state.conn !== conn.peer && state.id !== myState.__peerHookInternalID);
           });
           setError(undefined);
         });
