@@ -6,7 +6,6 @@ Use PeerJS in React with an interface somewhat similar to Appolo Client and the 
 
 Call the useHostPeerSession hook with the type of the state you want to share. The hook returns an array with the following values:
 
-
 1. The states of your peers
 2. The state of the host (your state)
 3. A function to set your state (and send it to your peers)
@@ -18,7 +17,7 @@ Call the useHostPeerSession hook with the type of the state you want to share. T
 ```tsx
  const [
     peerStates, myState, setMyState, myID, numConnections, forceNewID, error ] =
-     useHostMultiPeerSession<Host, Voter>({
+     useHostMultiPeerSession<Host, Joiner>({
       name: "Host",
       question: "What is your favorite color?",
       options: ["Red", "Blue", "Green"],
@@ -44,4 +43,19 @@ Given someone else's ID, call the useJoinPeerSession hook with the type of the s
       name: "Jebediah",
       choice: "Red"
     });
+```
+
+### Extra Details
+In the above code, the following are used for the types "Host" and "Voter"
+```tsx
+interface Host {
+ name: string
+ question: string
+ options: string[]
+}
+
+interface Joiner {
+ name: string
+ choice: string
+}
 ```
