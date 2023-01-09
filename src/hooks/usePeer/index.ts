@@ -7,6 +7,7 @@ import { generateID } from './helper/generateID';
 export function useJoinPeerSession<T>(
   peerID: string,
   initialState: T,
+  minPeerIDLength?: number,
 ): [T | undefined, T, (state: T) => void, boolean] {
   const [partnerState, setPartnerState] = useState<T | undefined>();
   const [myState, setMyState] = useState<T>(initialState);
@@ -14,14 +15,23 @@ export function useJoinPeerSession<T>(
 
   const [peer, setPeer] = useState<any>();
 
+  const minPeerLen = minPeerIDLength || generateID().length;
+
   useEffect(() => {
     import('peerjs').then(({ default: Peer }) => {
-      const peer = new Peer();
-      setPeer(peer);
-      peer.on('open', () => {
-        const conn = peer.connect(peerID);
+      if (peerID.length < minPeerLen) {
+        console.error(
+          'peerID is too short to attempt connection, specify `minPeerIDLength` to change',
+        );
+        return;
+      }
+      if (peer) peer.destroy();
+      const peerLocal = new Peer();
+      setPeer(peerLocal);
+      peerLocal.on('open', () => {
+        const conn = peerLocal.connect(peerID);
         conn.on('open', () => {
-          {/*@ts-ignore*/}
+         {  /*@ts-ignore*/  }
           conn.on('data', (data: T) => {
             setPartnerState(data);
           });
@@ -33,7 +43,7 @@ export function useJoinPeerSession<T>(
 
   useEffect(() => {
     if (peer) {
-      {/*@ts-ignore*/}
+      {  /*@ts-ignore*/  }
       peer.on('connection', (conn) => {
         conn.on('data', (data: T) => {
           setPartnerState(data);
@@ -49,7 +59,7 @@ export function useJoinPeerSession<T>(
         setPartnerState(data);
       });
 
-      {/*@ts-ignore*/}
+      {  /*@ts-ignore*/  }
       peer.on('error', (err) => {
         console.error(err);
       });
@@ -112,7 +122,7 @@ export function useHostPeerSession<T>(
           peer.on('open', (id) => {
             setMyID(id);
             peer.on('connection', (conn) => {
-              { /*@ts-ignore*/}
+              {  /*@ts-ignore*/  }
               conn.on('data', (data: T) => {
                 setPartnerState(data);
               });
@@ -185,18 +195,7 @@ export function useHostMultiPeerSession<HostState, PeerState>(
   () => void,
   string?,
 ] {
-  let pastID = '';
-  if (typeof window !== 'undefined') {
-    const prevIDTime = window.localStorage.getItem('TBS_REACT_HOOK_PEERID_TIME');
-    if (prevIDTime && Date.now() - parseInt(prevIDTime) < 1000 * 60 * 60 * 24 * 7) {
-      pastID = window.localStorage.getItem('TBS_REACT_HOOK_PEERID') || '';
-    } else {
-      window.localStorage.setItem(
-        'TBS_REACT_HOOK_PEERID_TIME',
-        Date.now().toString(),
-      );
-    }
-  }
+  const pastID = '';
 
   const [peerStates, setPeerStates] = useState<PeerDataPairWithConn<PeerState>[]>(
     [],
@@ -219,6 +218,29 @@ export function useHostMultiPeerSession<HostState, PeerState>(
 
   const stateExternal = { ...myState, __peerHookInternalID: undefined };
 
+  useEffect(() => {
+    let pastID = myID;
+    if (typeof window !== 'undefined') {
+      const prevIDTime = window.localStorage.getItem('TBS_REACT_HOOK_PEERID_TIME');
+      if (
+        prevIDTime &&
+        Date.now() - parseInt(prevIDTime) < 1000 * 60 * 60 * 24 * 7
+      ) {
+        pastID = window.localStorage.getItem('TBS_REACT_HOOK_PEERID') || '';
+      } else {
+        window.localStorage.setItem(
+          'TBS_REACT_HOOK_PEERID_TIME',
+          Date.now().toString(),
+        );
+      }
+    }
+    const newID = pastID === '' ? generateID() : pastID;
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('TBS_REACT_HOOK_PEERID', newID);
+    }
+    setMyID(newID);
+  }, []);
+
   const getNewID = () => {
     const newID = generateID();
     if (typeof window !== 'undefined') {
@@ -229,8 +251,7 @@ export function useHostMultiPeerSession<HostState, PeerState>(
 
   const conns = peer?.connections.length || 0;
   useEffect(() => {
-    const shouldGetNewID = myID === '';
-    const IDToUse = shouldGetNewID ? generateID() : myID;
+    const IDToUse = myID;
     import('peerjs').then(({ default: Peer }) => {
       const peer = new Peer(IDToUse);
       setPeer(peer);
@@ -314,7 +335,7 @@ export function useHostMultiPeerSession<HostState, PeerState>(
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [myState, connections, connectionsDeepForEffect],
+    [myState, connections, connectionsDeepForEffect, myID],
   );
 
   return [
@@ -385,6 +406,7 @@ export function useJoinMultiPeerSession<HostState, PeerState>(
         const conn = peer.connect(id);
         conn.on('open', () => {
           conn.send(myState);
+          setError(undefined);
         });
         conn.on('data', (data: unknown) => {
           if (
@@ -404,6 +426,7 @@ export function useJoinMultiPeerSession<HostState, PeerState>(
               });
               return newState;
             });
+            setError(undefined);
           } else {
             setError(`Received data of incorrect type`);
           }
@@ -412,6 +435,7 @@ export function useJoinMultiPeerSession<HostState, PeerState>(
           setPeerStates((prev: PeerDataPairWithConn<Internal<PeerState>>[]) => {
             return prev.filter((state) => state.conn !== conn.peer);
           });
+          setError(undefined);
         });
         conn.on('error', (err: { message: SetStateAction<string | undefined> }) => {
           setError(err.message);
