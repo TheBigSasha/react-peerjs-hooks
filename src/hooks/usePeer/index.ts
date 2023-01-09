@@ -112,9 +112,7 @@ export function useHostPeerSession<T>(
           peer.on('open', (id) => {
             setMyID(id);
             peer.on('connection', (conn) => {
-              {
-                /*@ts-ignore*/
-              }
+              { /*@ts-ignore*/}
               conn.on('data', (data: T) => {
                 setPartnerState(data);
               });
