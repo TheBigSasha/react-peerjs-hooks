@@ -218,29 +218,6 @@ export function useHostMultiPeerSession<HostState, PeerState>(
 
   const stateExternal = { ...myState, __peerHookInternalID: undefined };
 
-  useEffect(() => {
-    let pastID = myID;
-    if (typeof window !== 'undefined') {
-      const prevIDTime = window.localStorage.getItem('TBS_REACT_HOOK_PEERID_TIME');
-      if (
-        prevIDTime &&
-        Date.now() - parseInt(prevIDTime) < 1000 * 60 * 60 * 24 * 7
-      ) {
-        pastID = window.localStorage.getItem('TBS_REACT_HOOK_PEERID') || '';
-      } else {
-        window.localStorage.setItem(
-          'TBS_REACT_HOOK_PEERID_TIME',
-          Date.now().toString(),
-        );
-      }
-    }
-    const newID = pastID === '' ? generateID() : pastID;
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('TBS_REACT_HOOK_PEERID', newID);
-    }
-    setMyID(newID);
-  }, []);
-
   const getNewID = () => {
     const newID = generateID();
     if (typeof window !== 'undefined') {
@@ -249,8 +226,17 @@ export function useHostMultiPeerSession<HostState, PeerState>(
     setMyID(newID);
   };
 
+  useEffect(() => {
+    if(myID === ''){
+      getNewID();
+    }
+  }, []);
+
   const conns = peer?.connections.length || 0;
   useEffect(() => {
+    if(myID === ''){
+      return;
+    }
     const IDToUse = myID;
     import('peerjs').then(({ default: Peer }) => {
       const peer = new Peer(IDToUse);
