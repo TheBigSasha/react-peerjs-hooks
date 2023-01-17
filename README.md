@@ -37,6 +37,8 @@ In any case, the state of the peers can be used to construct a universal state b
 
 Typical way to update universal state (every time the host recieves a change to peer states) `reducer(PeerStates, HostState) => HostState`
 
+This also leads to an important conclusion that peer states should never depend on host state, and instead be only a funciton of the actions of that given peer. The interaction between that peer state and the host should be handled in the reducer.
+
 # Hosting a P2P Session:
 
 Call the useHostPeerSession hook with the type of the state you want to share. The hook returns an array with the following values:
