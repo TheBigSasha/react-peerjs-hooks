@@ -2,6 +2,41 @@
 
 Use PeerJS in React with an interface somewhat similar to Appolo Client and the usual useState hooks.
 
+The concept is that peer to peer states should be:
+1. Strongly typed
+2. Published to independent channels
+3. Easy to use
+
+### Strongly Typed
+In this library, a peer to peer state is defined by a host state, and a joiner state. These can be the same thing, however it is usually useful for the host to be responsbile for controlling state to do with the "scene" at large, with joiners only being able to put in requests.
+
+*Example*: In a game, where we play as democratic pirates who move their ship in the agreed upon position at any time. 
+
+```tsx
+interface HostState{
+ shipCoords: {
+  x: number,
+  y: number
+ }
+}
+```
+
+```tsx
+interface GuestState{
+ preferredDirection: "left" | "right" | "back" | "forward"
+}
+```
+
+In this case, the host side code will, at each tick of the game, look through all of the guest states and pick the most popular direction, and update the ship's coordinates accordingly.
+
+When the game logic changes the ship position, it is sent to all peers as HostState
+
+When the peers change their vote, they are able to indirectly affect the game for everyone.
+
+In any case, the state of the peers can be used to construct a universal state by way of a **reducer**.
+
+Typical way to update universal state (every time the host recieves a change to peer states) `reducer(PeerStates, HostState) => HostState`
+
 # Hosting a P2P Session:
 
 Call the useHostPeerSession hook with the type of the state you want to share. The hook returns an array with the following values:
